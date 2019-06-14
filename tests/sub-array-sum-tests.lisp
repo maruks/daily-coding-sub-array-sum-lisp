@@ -1,0 +1,35 @@
+(fiasco:define-test-package :sub-array-sum-tests
+  (:use :sub-array-sum :fiasco :check-it))
+
+(in-package :sub-array-sum-tests)
+
+(deftest sub-array-sum-test ()
+  (is (equal (cons 1 3) (sub-array-sum #(2 3 4 5) 7))))
+
+(deftest sub-array-pos-sum-test ()
+  (is (equal (cons 1 3) (sub-array-pos-sum #(2 3 4 5) 7))))
+
+(defun test-gen (min max max-size)
+  (generator (chain ((size (integer 1 max-size)))
+		    (generator (map (lambda (a b xs) (let ((idx (cond ((> a b) (cons b a))
+								      ((< a b) (cons a b))
+								      (t (cons a (1+ b))))))
+						       (cons idx (make-array (length xs) :initial-contents xs))))
+				    (integer 0 (1- size))
+				    (integer 0 size)
+				    (list (integer min max) :length size))))))
+
+(deftest sub-array-pos-gen-test ()
+  (let ((*num-trials* 1000)
+	(*list-size* 110))
+    (check-it (test-gen 0 20 100)
+	      (lambda (e)
+		(let* ((a (caar e))
+		       (b (cdar e))
+		       (xs (cdr e))
+		       (target (reduce #'+ (subseq xs a b)))
+		       (r1 (sub-array-sum xs target))
+		       (r2 (sub-array-pos-sum xs target))
+		       (s (reduce #'+ (subseq xs (car r1) (cdr r1)))))
+		  (is (= s target))
+		  (is (equal r1 r2)))))))
