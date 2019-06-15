@@ -22,7 +22,7 @@
 (deftest sub-array-pos-gen-test ()
   (let ((*num-trials* 1000)
 	(*list-size* 110))
-    (check-it (test-gen 0 20 100)
+    (check-it (test-gen 0 20 110)
 	      (lambda (e)
 		(let* ((a (caar e))
 		       (b (cdar e))
