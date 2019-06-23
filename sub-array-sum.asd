@@ -10,6 +10,8 @@
   :version "0.0.1"
   :author "Maris Orbidans"
   :licence "Public Domain"
+  :depends-on (:alexandria
+	       :serapeum)
   :serial t
   :components ((:module "src"
 		:serial t

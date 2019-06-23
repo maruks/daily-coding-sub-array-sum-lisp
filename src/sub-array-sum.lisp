@@ -1,6 +1,6 @@
 (defpackage :sub-array-sum
-  (:use cl)
-  (:export sub-array-sum sub-array-pos-sum))
+  (:use cl alexandria serapeum)
+  (:export sub-array-sum sub-array-pos-sum sub-array-hash-sum))
 
 (in-package :sub-array-sum)
 
@@ -16,14 +16,28 @@
 (defvar *array*)
 (defvar *array-size*)
 
-(defun sub-array-sum-2 (start index sum)
+(defun find-sub-array-pos-sum (start index sum)
   (when (<= index *array-size*)
     (cond ((= sum *target*) (cons start index))
-	  ((and (> sum *target*) (< start (1- index))) (sub-array-sum-2 (1+ start) index (- sum (aref *array* start))))
-	  ((< index *array-size*) (sub-array-sum-2 start (1+ index) (+ sum (aref *array* index)))))))
+	  ((and (> sum *target*) (< start (1- index))) (find-sub-array-pos-sum (1+ start) index (- sum (aref *array* start))))
+	  ((< index *array-size*) (find-sub-array-pos-sum start (1+ index) (+ sum (aref *array* index)))))))
 
+;; works for non-negative numbers only
 (defun sub-array-pos-sum (array target)
   (let ((*target* target)
 	(*array* array)
 	(*array-size* (length array)))
-    (sub-array-sum-2 0 1 (aref array 0))))
+    (find-sub-array-pos-sum 0 1 (aref array 0))))
+
+(defun find-sub-array-hash-sum (idx-sum-hash sum idx)
+  (let ((s (gethash (- sum *target*) idx-sum-hash)))
+    (cond (s (cons (1+ s) idx))
+	  ((< idx *array-size*) (let* ((next-sum (+ sum (aref *array* idx))))
+				  (setf (gethash next-sum idx-sum-hash) idx)
+				  (find-sub-array-hash-sum idx-sum-hash next-sum (1+ idx)))))))
+
+(defun sub-array-hash-sum (array target)
+  (let ((*target* target)
+	(*array* array)
+	(*array-size* (length array)))
+    (find-sub-array-hash-sum (dict 0 -1) 0 0)))
